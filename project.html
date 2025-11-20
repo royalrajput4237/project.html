@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" >
+  <title>THAKUR Room Rent — Demo</title>
+  </head>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,segoe UI,ROBOTO,Arial;}
+    body{background:#f2f3f5;padding:20px;}
+    header{display<!doctype html>
+    <html lang="hi">
+
+    <head>
+    <meta charset=utf-8" />
+    <metalay:flex;align-items:center;justify-content:space-between;margin-buttom:18px;}
+    h1{font-si name="viewport" content="width=device-width,initial-scale=1" />
+  <title>THAKUR Villa - </title>
+ze:20px;}
+    .search-row {display:flex;gap:8px;flex-wrap:wrap;}
+    .search-row input,.search-row select{padding:8px;border-radius:6px;border:1px solid#192e47;}
+    .container{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px;}
+    .card{background:white;border-radius:10px;box-shadow:0 6px 16px rgba(16,24,40,0.06);overflow:hidden}
+    .card img{width:100%;height:160px;object-fit:cover;display:block}
+    .card-body{padding:12px}
+    .price{font-weight:700;color:#0f766e}
+    .small{font-size:13px;color:#6b7280;margin-top:6px}
+    .btn{display:inline-block;padding:8px 12px;border-radius:8px;border:none;background:#0f766e;color:white;cursor:pointer;margin-top:10px}
+    .btn-ghost{background:transparent;border:1px solid #cbd5e1;color:#374151;padding:6px 10px;border-radius:8px;cursor:pointer}
+    .modal-bg{position:fixed;inset:0;background:rgba(2,6,23,0.5);display:none;align-items:center;justify-content:center;padding:20px}
+    .modal{background:white;border-radius:10px;padding:18px;max-width:480px;width:100%}
+    label{display:block;font-size:13px;margin-top:10px;color:#374151}
+    input[type="text"], input[type="email"], input[type="number"]{width:100%;padding:8px;border-radius:6px;border:1px solid #e5e7eb;margin-top:6px}
+    @media (max-width:520px){
+      .card img{height:140px}
+      header{flex-direction:column;align-items:flex-start;gap:10px}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>THAKUR Villa</h1>
+      <div style="font-size:13px;color:#6b7280">MOB. <a href="tel:+917395082006" style="color:inherit;text-decoration:none">7395082006</a></div>
+    </div>
+
+    <div class="search-row" >
+      <input id="searchInput" placeholder="Search by city or title..." />
+      <select id="typeFilter" >
+        <option value="">All types</option>
+        <option value="3Star">3Star</option>
+        <option value="5Star">5Star</option>
+        
+      </select>
+      <select id="sortSelect">
+        <option value="none">Sort</option>
+        <option value="priceAsc">Price: Low → High</option>
+        <option value="priceDesc">Price: High → Low</option>
+      </select>
+    </div>
+  </header>
+
+  <main>
+    <section id="roomsContainer" class="container"></section>
+  </main>
+
+  <div id="modalBg" class="modal-bg" role="dialog" aria-hidden="true">
+    <div class="modal" role="document">
+      <button id="closeModal" class="btn-ghost" style="float:right;">Close</button>
+      <h2 id="modalTitle"></h2>
+      <p id="modalLocation" class="small"></p>
+      <img id="modalImg" src="" alt="" style="width:100%;height:180px;object-fit:cover;border-radius:8px;margin-top:8px;">
+      <p class="price" id="modalPrice" style="margin-top:8px;"></p>
+
+      <form id="bookingForm" style="margin-top:12px;">
+        <h3 style="font-size:15px;margin-bottom:6px;">Book This Villa</h3>
+        <label>Full Name <input type="text" id="name" required></label>
+        <label>Email <input type="email" id="email" required></label>
+        <label>Phone <input type="text" id="phone" required></label>
+        <label>Days to Book <input type="number" id="days" min="1" value="1" required></label>
+        <input type="hidden" id="roomId">
+        <button type="submit" class="btn">Confirm Booking</button>
+      </form>
+      <div id="msg" style="margin-top:10px;color:green;"></div>
+    </div>
+  </div>
+
+  <script>
+  
+    const rooms = [
+      { id:1, title:"Janaki Villa  | Entire2BHK Luxury Bungalow(The Mall Rd,Varanasi cantonment)",  types:"3Star",type:"Entire villa with a caretaker,kitchen,Wi-Fi & parking",city:"varanasi", price:6700, img:"https://ramadavaranasikatesar.com/wp-content/uploads/2023/03/3-2.jpg" },
+      { id:2, title:"OM Vilas Benares - Luxury Hotel Resort in (off Varanasi Ring Road, Christ Nagar,)", city:"Varanasi", type:"Free breakfast,Wi-Fi ", price:3400, img:"https://lh3.googleusercontent.com/p/AF1QipPvJfCeLSp-0YR3cI9No4zYHTl_gupFUO063_PU=s204-w204-h116-p-n-k-no"},
+      { id:3, title:"Kaashi Villas - A Luxury Homestay(Nadesar Palace,Raja Bazar Rd,opp.Taskal Cinema hall)", city:"Varanasi", type:"Free breakfast, Wi-Fi and parking", price:5600, img:"https://lh3.googleusercontent.com/p/AF1QipMzSBVUeWXAvdc6kjkt0Y10THa3nrw4bwjnXSoH=s204-w204-h116-p-n-k-no" },
+      { id:4, title:"Captain Villa Heritage House(Dasaswamedh Ghat)", city:"Varanasi", type:"Free Wi-Fi,Front desh[24-hour]", price:4500, img:"https://q-xx.bstatic.com/xdata/images/hotel/840x460/541505079.jpg?k=d49b5dbacea0503677c31fbad61cb95f10be52bb572ee76ecd9aacb4d05a48e6&o="},
+      { id:5, title:"Hotel Dolphin Grand(Assi Ghat)", city:"Varanasi", type:"24*7 Check-in,Air-conditioned rooms,Buffet Breakfast", price:5000,img:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzkXfDvc5CzcKFKURmO4c6gKRxmr74UmVDXA&simg:" }
+    ];
+
+
+    const container = document.getElementById('roomsContainer');
+    const searchInput = document.getElementById('searchInput');
+    const typeFilter = document.getElementById('typeFilter');
+    const sortSelect = document.getElementById('sortSelect');
+
+    function render(list){
+      container.innerHTML = '';
+      if(list.length===0){
+        container.innerHTML = '<p style="grid-column:1/-1;color:#6b7280">Koi room available nahi mila.</p>';
+        return;
+      }
+      list.forEach(r=>{
+        const card = document.createElement('div'); card.className='card';
+        card.innerHTML = `\n          <img src="${r.img}" alt="${r.title}">\n          <div class="card-body">\n            <div style="display:flex;justify-content:space-between;align-items:center;">\n              <div>\n                <div style="font-weight:700">${r.title}</div>\n                <div class="small">${r.city} • ${r.type.toUpperCase()}</div>\n              </div>\n              <div class="price">₹ ${r.price}</div>\n            </div>\n            <button class="btn" data-id="${r.id}" style="margin-top:10px;">View & Book</button>\n          </div>`;
+        container.appendChild(card);
+      });
+
+      container.querySelectorAll('.btn').forEach(b=>{
+        b.addEventListener('click', ()=> openModal( b.getAttribute('data-id') ));
+      });
+    }
+
+    render(rooms);
+
+    function applyFilters(){
+      let q = searchInput.value.trim().toLowerCase();
+      let type = typeFilter.value;
+      let filtered = rooms.filter(r=>{
+        let matchesSearch = q==='' || r.title.toLowerCase().includes(q) || r.city.toLowerCase().includes(q);
+        let matchesType = type==='' || r.type===type;
+        return matchesSearch && matchesType;
+      });
+      const sort = sortSelect.value;
+      if(sort==='priceAsc') filtered.sort((a,b)=>a.price-b.price);
+      if(sort==='priceDesc') filtered.sort((a,b)=>b.price-a.price);
+      render(filtered);
+    }
+
+    searchInput.addEventListener('input', applyFilters);
+    typeFilter.addEventListener('change', applyFilters);
+    sortSelect.addEventListener('change', applyFilters);
+
+    const modalBg = document.getElementById('modalBg');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalImg = document.getElementById('modalImg');
+    const modalPrice = document.getElementById('modalPrice');
+    const modalLocation = document.getElementById('modalLocation');
+    const roomIdInput = document.getElementById('roomId');
+    const msg = document.getElementById('msg');
+
+    function openModal(id){
+      const r = rooms.find(x=>x.id==id);
+      if(!r) return;
+      modalTitle.textContent = r.title;
+      modalImg.src = r.img && r.img.trim() !== '' ? r.img : PLACEHOLDER;
+      modalImg.alt = r.title;
+      modalPrice.textContent = '₹ ' + r.price + ' / day';
+      modalLocation.textContent = r.city + ' • ' + r.type.toUpperCase();
+      roomIdInput.value = r.id;
+      msg.textContent = '';
+      modalBg.style.display = 'flex';
+      modalBg.setAttribute('aria-hidden','false');
+    }
+
+    document.getElementById('closeModal').addEventListener('click', ()=> {
+      closeModal();
+    });
+    modalBg.addEventListener('click', (e)=>{ if(e.target===modalBg){ closeModal(); } });
+
+    function closeModal(){
+      modalBg.style.display = 'none';
+      modalBg.setAttribute('aria-hidden','true');
+    }
+
+    bookingForm.addEventListener('submit', (ev)=>{
+      ev.preventDefault();
+      const booking = {
+        roomId: +roomIdInput.value,
+        name: document.getElementById('name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        days: +document.getElementById('days').value
+      };
+      console.log('Booking data:', booking);
+      msg.style.color = 'green';
+      msg.textContent = 'Booking submitted!';
+      bookingForm.reset();
+      roomIdInput.value='';
+      setTimeout(closeModal,1200);
+    });
+    render(rooms);
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
